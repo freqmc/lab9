@@ -25,7 +25,6 @@ public class ChatModel {
     private BufferedReader reader;
     private OutputStream rawOut;
     private SendStrategy strategy;
-
     private final ExecutorService commandExecutor = Executors.newSingleThreadExecutor();
     private final Map<String, LevelConfig> securityLevels = new HashMap<>();
 
@@ -62,7 +61,6 @@ public class ChatModel {
                 strategy = config.strategySupplier.get();
 
                 connected.set(true);
-
                 strategy.send(rawOut, "REGISTER|" + username);
                 appendLog("Ожидание ответа сервера...\n");
 
@@ -75,6 +73,50 @@ public class ChatModel {
                 disconnect();
             }
         }).start();
+    }
+
+    public void assignSecretFriends() {
+        if (!connected.get()) return;
+        commandExecutor.submit(() -> {
+            try {
+                strategy.send(rawOut, "ASSIGN");
+            } catch (IOException e) {
+                appendLog("Ошибка назначения: " + e.getMessage() + "\n");
+            }
+        });
+    }
+
+    public void getHint() {
+        if (!connected.get()) return;
+        commandExecutor.submit(() -> {
+            try {
+                strategy.send(rawOut, "HINT");
+            } catch (IOException e) {
+                appendLog("Ошибка получения подсказки: " + e.getMessage() + "\n");
+            }
+        });
+    }
+
+    public void addHint(String hint) {
+        if (!connected.get()) return;
+        commandExecutor.submit(() -> {
+            try {
+                strategy.send(rawOut, "ADD_HINT|" + hint);
+            } catch (IOException e) {
+                appendLog("Ошибка добавления подсказки: " + e.getMessage() + "\n");
+            }
+        });
+    }
+
+    public void guessFriend(String guess) {
+        if (!connected.get()) return;
+        commandExecutor.submit(() -> {
+            try {
+                strategy.send(rawOut, "GUESS|" + guess);
+            } catch (IOException e) {
+                appendLog("Ошибка проверки: " + e.getMessage() + "\n");
+            }
+        });
     }
 
     public void sendMessage(String recipient, String text) {
@@ -140,8 +182,16 @@ public class ChatModel {
             } else if (response.startsWith("EMPTY|")) {
                 messages.get().clear();
                 appendLog("📭 " + response.substring(6) + "\n");
+            } else if (response.startsWith("HINT|")) {
+                appendLog("💡 ПОДСКАЗКА: " + response.substring(5) + "\n");
+            } else if (response.startsWith("GUESS_RESULT|")) {
+                appendLog("🎯 " + response.substring(13) + "\n");
+            } else if (response.startsWith("PARTICIPANTS|")) {
+                appendLog("👥 Участники: " + response.substring(13) + "\n");
+            } else if (response.startsWith("REVEAL|")) {
+                appendLog("🔓 РАСКРЫТИЕ: " + response.substring(7) + "\n");
             } else {
-                appendLog("⚠️ Неизвестный ответ: " + response + "\n");
+                appendLog("⚠️ " + response + "\n");
             }
         });
     }
