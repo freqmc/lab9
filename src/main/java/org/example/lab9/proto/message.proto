@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+option java_package = "com.anonchat.proto";
+option java_outer_classname = "MessageProto";
+
+// Сообщение для туннелирования команд (Уровни 2 и 3)
+message SecureMessage {
+    string command = 1;   // Имя команды: REGISTER, SEND, INBOX, REVEAL
+    string payload = 2;   // Дополнительные данные (имя получателя, текст и т.д.)
+}

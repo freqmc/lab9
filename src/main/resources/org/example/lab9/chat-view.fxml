@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="org.example.lab9.ChatController"
+      spacing="10" alignment="CENTER"
+      prefWidth="450" prefHeight="650">
+
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <Label text="Тайный друг"
+           style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+
+    <Label text="Уровень защиты:" alignment="CENTER_LEFT" prefWidth="300"/>
+    <ComboBox fx:id="levelComboBox" prefWidth="300"/>
+
+    <TextField fx:id="nameField" promptText="Ваше имя" prefWidth="300"/>
+    <Button fx:id="connectBtn" text="Подключиться" prefWidth="300"/>
+
+    <Separator/>
+
+    <TextField fx:id="recipientField" promptText="Имя получателя" prefWidth="300"/>
+    <TextField fx:id="messageField" promptText="Текст сообщения" prefWidth="300"/>
+
+    <HBox spacing="10" prefWidth="300">
+        <Button fx:id="sendBtn" text="Отправить анонимно" HBox.hgrow="ALWAYS"/>
+        <Button fx:id="inboxBtn" text="Проверить почту" HBox.hgrow="ALWAYS"/>
+    </HBox>
+
+    <Label text="Входящие сообщения:" alignment="CENTER_LEFT" prefWidth="300"/>
+    <ListView fx:id="inboxListView" prefHeight="120" prefWidth="300"/>
+
+    <TextArea fx:id="logArea" editable="false" prefHeight="200" prefWidth="300"/>
+</VBox>
