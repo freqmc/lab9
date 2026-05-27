@@ -31,8 +31,8 @@ public class ChatModel {
     public ChatModel() {
         securityLevels.put("Уровень 0: Без защиты (Direct)", new LevelConfig(5555, TextSendStrategy::new));
         securityLevels.put("Уровень 1: Прокси (Hidden IP)", new LevelConfig(5556, TextSendStrategy::new));
-        securityLevels.put("Уровень 2: Туннель (ProtoBuf)", new LevelConfig(5555, ProtoSendStrategy::new));
-        securityLevels.put("Уровень 3: Прокси + Туннель (Max Security)", new LevelConfig(5556, ProtoSendStrategy::new));
+        securityLevels.put("Уровень 2: ProtoBuf туннель", new LevelConfig(5555, ProtoSendStrategy::new));
+        securityLevels.put("Уровень 3: Прокси + ProtoBuf", new LevelConfig(5556, ProtoSendStrategy::new));
     }
 
     public StringProperty logProperty() { return log; }
@@ -71,52 +71,10 @@ public class ChatModel {
             } catch (IOException e) {
                 appendLog("Ошибка подключения: " + e.getMessage() + "\n");
                 disconnect();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
         }).start();
-    }
-
-    public void assignSecretFriends() {
-        if (!connected.get()) return;
-        commandExecutor.submit(() -> {
-            try {
-                strategy.send(rawOut, "ASSIGN");
-            } catch (IOException e) {
-                appendLog("Ошибка назначения: " + e.getMessage() + "\n");
-            }
-        });
-    }
-
-    public void getHint() {
-        if (!connected.get()) return;
-        commandExecutor.submit(() -> {
-            try {
-                strategy.send(rawOut, "HINT");
-            } catch (IOException e) {
-                appendLog("Ошибка получения подсказки: " + e.getMessage() + "\n");
-            }
-        });
-    }
-
-    public void addHint(String hint) {
-        if (!connected.get()) return;
-        commandExecutor.submit(() -> {
-            try {
-                strategy.send(rawOut, "ADD_HINT|" + hint);
-            } catch (IOException e) {
-                appendLog("Ошибка добавления подсказки: " + e.getMessage() + "\n");
-            }
-        });
-    }
-
-    public void guessFriend(String guess) {
-        if (!connected.get()) return;
-        commandExecutor.submit(() -> {
-            try {
-                strategy.send(rawOut, "GUESS|" + guess);
-            } catch (IOException e) {
-                appendLog("Ошибка проверки: " + e.getMessage() + "\n");
-            }
-        });
     }
 
     public void sendMessage(String recipient, String text) {
@@ -124,7 +82,7 @@ public class ChatModel {
         commandExecutor.submit(() -> {
             try {
                 strategy.send(rawOut, "SEND|" + recipient + "|" + text);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 appendLog("Ошибка отправки: " + e.getMessage() + "\n");
             }
         });
@@ -135,8 +93,52 @@ public class ChatModel {
         commandExecutor.submit(() -> {
             try {
                 strategy.send(rawOut, "INBOX");
-            } catch (IOException e) {
+            } catch (Exception e) {
                 appendLog("Ошибка запроса: " + e.getMessage() + "\n");
+            }
+        });
+    }
+
+    public void assignSecretFriends() {
+        if (!connected.get()) return;
+        commandExecutor.submit(() -> {
+            try {
+                strategy.send(rawOut, "ASSIGN");
+            } catch (Exception e) {
+                appendLog("Ошибка назначения: " + e.getMessage() + "\n");
+            }
+        });
+    }
+
+    public void getHint() {
+        if (!connected.get()) return;
+        commandExecutor.submit(() -> {
+            try {
+                strategy.send(rawOut, "HINT");
+            } catch (Exception e) {
+                appendLog("Ошибка получения подсказки: " + e.getMessage() + "\n");
+            }
+        });
+    }
+
+    public void addHint(String hint) {
+        if (!connected.get()) return;
+        commandExecutor.submit(() -> {
+            try {
+                strategy.send(rawOut, "ADD_HINT|" + hint);
+            } catch (Exception e) {
+                appendLog("Ошибка добавления подсказки: " + e.getMessage() + "\n");
+            }
+        });
+    }
+
+    public void guessFriend(String guess) {
+        if (!connected.get()) return;
+        commandExecutor.submit(() -> {
+            try {
+                strategy.send(rawOut, "GUESS|" + guess);
+            } catch (Exception e) {
+                appendLog("Ошибка проверки: " + e.getMessage() + "\n");
             }
         });
     }
@@ -168,7 +170,7 @@ public class ChatModel {
             if (response.startsWith("OK|")) {
                 appendLog("✅ " + response.substring(3) + "\n");
             } else if (response.startsWith("ERROR|")) {
-                appendLog("❌ " + response.substring(6) + "\n");
+                appendLog(" " + response.substring(6) + "\n");
             } else if (response.startsWith("MESSAGES|")) {
                 ObservableList<String> currentList = messages.get();
                 currentList.clear();
@@ -181,7 +183,7 @@ public class ChatModel {
                 appendLog("📥 Входящих: " + currentList.size() + "\n");
             } else if (response.startsWith("EMPTY|")) {
                 messages.get().clear();
-                appendLog("📭 " + response.substring(6) + "\n");
+                appendLog(" " + response.substring(6) + "\n");
             } else if (response.startsWith("HINT|")) {
                 appendLog("💡 ПОДСКАЗКА: " + response.substring(5) + "\n");
             } else if (response.startsWith("GUESS_RESULT|")) {
@@ -206,9 +208,10 @@ public class ChatModel {
     }
 
     public interface SendStrategy {
-        void send(OutputStream out, String cmd) throws IOException;
+        void send(OutputStream out, String cmd) throws Exception;
     }
 
+    // Текстовая стратегия (Уровни 0 и 1)
     public static class TextSendStrategy implements SendStrategy {
         @Override
         public void send(OutputStream out, String cmd) throws IOException {
@@ -218,10 +221,32 @@ public class ChatModel {
         }
     }
 
+    // ProtoBuf стратегия (Уровни 2 и 3)
     public static class ProtoSendStrategy implements SendStrategy {
+        // В методе send() класса ProtoSendStrategy:
         @Override
         public void send(OutputStream out, String cmd) throws IOException {
-            byte[] data = (cmd + "\n").getBytes(StandardCharsets.UTF_8);
+            String[] parts = cmd.split("\\|", 3);
+
+            MessageProto.SecureMessage.Builder builder = MessageProto.SecureMessage.newBuilder();
+
+            if (parts.length >= 1) {
+                builder.setCommand(parts[0]);
+            }
+            if (parts.length >= 2) {
+                if (parts[0].equals("SEND") && parts.length == 3) {
+                    builder.setPayload(parts[1] + "|" + parts[2]);
+                } else if (parts.length > 1) {
+                    builder.setPayload(parts[1]);
+                }
+            }
+
+            MessageProto.SecureMessage message = builder.build();
+            byte[] data = message.toByteArray();
+
+            // Отправляем: [общая длина 4 байта][ProtoBuf данные]
+            byte[] lengthPrefix = ByteBuffer.allocate(4).putInt(data.length).array();
+            out.write(lengthPrefix);
             out.write(data);
             out.flush();
         }

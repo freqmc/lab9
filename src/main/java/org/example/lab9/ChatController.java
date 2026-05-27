@@ -43,7 +43,7 @@ public class ChatController {
                 "Уровень 0: Без защиты (Direct)",
                 "Уровень 1: Прокси (Hidden IP)",
                 "Уровень 2: Туннель (ProtoBuf)",
-                "Уровень 3: Прокси + Туннель (Max Security)"
+                "Уровень 3: Прокси + Туннель"
         );
         levelComboBox.setValue("Уровень 0: Без защиты (Direct)");
 
