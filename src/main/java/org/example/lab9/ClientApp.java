@@ -12,8 +12,8 @@ public class ClientApp extends Application {
     @Override
     public void start(Stage primaryStage) throws IOException {
         ChatModel model = new ChatModel();
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("chat-view.fxml"));
 
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("chat-view.fxml"));
         loader.setControllerFactory(param -> {
             if (param == ChatController.class) {
                 return new ChatController(model);
@@ -26,7 +26,8 @@ public class ClientApp extends Application {
         });
 
         var root = loader.load();
-        primaryStage.setTitle("Тайный друн");
+
+        primaryStage.setTitle("Тайный Друг");
         primaryStage.setScene(new Scene((Parent) root));
         primaryStage.show();
 

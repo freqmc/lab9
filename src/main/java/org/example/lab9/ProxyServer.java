@@ -15,9 +15,11 @@ public class ProxyServer {
         try (ServerSocket proxySocket = new ServerSocket(PROXY_PORT)) {
             while (true) {
                 Socket clientSocket = proxySocket.accept();
+                System.out.println("Клиент подключился к прокси: " + clientSocket.getInetAddress());
                 new Thread(() -> handleProxyConnection(clientSocket)).start();
             }
         } catch (IOException e) {
+            System.err.println("Ошибка запуска прокси-сервера: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -30,22 +32,25 @@ public class ProxyServer {
                 InputStream targetIn = targetSocket.getInputStream();
                 OutputStream targetOut = targetSocket.getOutputStream();
         ) {
-            Thread t1 = new Thread(() -> transferStream(clientIn, targetOut));
-            Thread t2 = new Thread(() -> transferStream(targetIn, clientOut));
+            Thread t1 = new Thread(() -> transferStream(clientIn, targetOut, "C->S"));
+            Thread t2 = new Thread(() -> transferStream(targetIn, clientOut, "S->C"));
 
             t1.start();
             t2.start();
 
             t1.join();
             t2.join();
+
         } catch (Exception e) {
-            System.err.println("Ошибка в прокси: " + e.getMessage());
+            System.err.println("Ошибка в туннеле прокси: " + e.getMessage());
         } finally {
-            try { clientSocket.close(); } catch (IOException e) {}
+            try {
+                if (clientSocket != null && !clientSocket.isClosed()) clientSocket.close();
+            } catch (IOException ignored) {}
         }
     }
 
-    private static void transferStream(InputStream from, OutputStream to) {
+    private static void transferStream(InputStream from, OutputStream to, String label) {
         byte[] buffer = new byte[4096];
         int bytesRead;
         try {
@@ -54,6 +59,7 @@ public class ProxyServer {
                 to.flush();
             }
         } catch (IOException e) {
+            // Соединение разорвано
         }
     }
 }

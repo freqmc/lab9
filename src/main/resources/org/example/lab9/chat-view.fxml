@@ -14,10 +14,9 @@
         <Insets top="20" right="20" bottom="20" left="20"/>
     </padding>
 
-    <Label text="🎁 ТАЙНЫЙ ДРУГ"
-           style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #d32f2f;"/>
+    <Label text="ТАЙНЫЙ ДРУГ"
+           style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
 
-    <!-- Подключение -->
     <Label text="Уровень защиты:" alignment="CENTER_LEFT" prefWidth="400"/>
     <ComboBox fx:id="levelComboBox" prefWidth="400"/>
     <TextField fx:id="nameField" promptText="Ваше имя" prefWidth="400"/>
@@ -25,17 +24,16 @@
 
     <Separator/>
 
-    <!-- Игровая секция -->
-    <Label text="🎮 ИГРА 'ТАЙНЫЙ ДРУГ'"
+    <Label text="ИГРА 'ТАЙНЫЙ ДРУГ'"
            style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
 
-    <Button fx:id="assignBtn" text="🎲 НАЗНАЧИТЬ тайных друзей"
+    <Button fx:id="assignBtn" text="Назначить тайных друзей"
             prefWidth="400" style="-fx-background-color: #4caf50; -fx-text-fill: white;"/>
 
     <HBox spacing="10" prefWidth="400">
-        <Button fx:id="hintBtn" text="💡 Подсказка" HBox.hgrow="ALWAYS"
+        <Button fx:id="hintBtn" text="Подсказка" HBox.hgrow="ALWAYS"
                 style="-fx-background-color: #ff9800; -fx-text-fill: white;"/>
-        <Button fx:id="guessBtn" text="🎯 Угадать друга" HBox.hgrow="ALWAYS"
+        <Button fx:id="guessBtn" text="Угадать друга" HBox.hgrow="ALWAYS"
                 style="-fx-background-color: #2196f3; -fx-text-fill: white;"/>
     </HBox>
 
@@ -45,8 +43,7 @@
 
     <Separator/>
 
-    <!-- Отправка сообщений -->
-    <Label text="📨 Анонимные сообщения"
+    <Label text="Анонимные сообщения"
            style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
 
     <TextField fx:id="recipientField" promptText="Имя получателя" prefWidth="400"/>
@@ -55,12 +52,10 @@
 
     <Separator/>
 
-    <!-- Входящие -->
-    <Label text="📥 Входящие сообщения" alignment="CENTER_LEFT" prefWidth="400"/>
+    <Label text="Входящие сообщения" alignment="CENTER_LEFT" prefWidth="400"/>
     <ListView fx:id="inboxListView" prefHeight="150" prefWidth="400"/>
-    <Button fx:id="inboxBtn" text="🔄 Обновить почту" prefWidth="400"/>
+    <Button fx:id="inboxBtn" text="Обновить почту" prefWidth="400"/>
 
-    <!-- Лог -->
-    <Label text="📋 Лог событий" alignment="CENTER_LEFT" prefWidth="400"/>
+    <Label text="Лог событий" alignment="CENTER_LEFT" prefWidth="400"/>
     <TextArea fx:id="logArea" editable="false" prefHeight="150" prefWidth="400"/>
 </VBox>

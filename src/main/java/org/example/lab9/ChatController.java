@@ -23,13 +23,10 @@ public class ChatController {
     private void initialize() {
         if (model == null) throw new IllegalStateException("Model cannot be null");
 
-        // Привязки
         connectBtn.disableProperty().bind(model.connectedProperty());
         sendBtn.disableProperty().bind(model.connectedProperty().not());
         inboxBtn.disableProperty().bind(model.connectedProperty().not());
         nameField.disableProperty().bind(model.connectedProperty());
-
-        // Кнопки игры тоже активируются после подключения
         assignBtn.disableProperty().bind(model.connectedProperty().not());
         hintBtn.disableProperty().bind(model.connectedProperty().not());
         guessBtn.disableProperty().bind(model.connectedProperty().not());
@@ -38,16 +35,14 @@ public class ChatController {
         logArea.textProperty().bind(model.logProperty());
         inboxListView.itemsProperty().bind(model.messagesProperty());
 
-        // Заполнение ComboBox
         levelComboBox.getItems().addAll(
                 "Уровень 0: Без защиты (Direct)",
                 "Уровень 1: Прокси (Hidden IP)",
-                "Уровень 2: Туннель (ProtoBuf)",
-                "Уровень 3: Прокси + Туннель"
+                "Уровень 2: ProtoBuf туннель",
+                "Уровень 3: Прокси + ProtoBuf"
         );
         levelComboBox.setValue("Уровень 0: Без защиты (Direct)");
 
-        // Обработчики
         connectBtn.setOnAction(e -> {
             String level = levelComboBox.getValue();
             String name = nameField.getText().trim();
@@ -68,8 +63,6 @@ public class ChatController {
         });
 
         inboxBtn.setOnAction(e -> model.checkInbox());
-
-        // === НОВЫЕ ОБРАБОТЧИКИ ДЛЯ ИГРЫ ===
 
         assignBtn.setOnAction(e -> {
             model.appendLog("🎲 Назначение тайных друзей...\n");

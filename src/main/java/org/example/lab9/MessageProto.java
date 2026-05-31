@@ -1,15 +1,9 @@
 package org.example.lab9;
 
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.ByteString;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
-/**
- * Упрощённая реализация ProtoBuf сообщения без генерации.
- * Формат: [длина 4 байта][command длина 4 байта][command][payload длина 4 байта][payload]
- */
 public class MessageProto {
 
     public static class SecureMessage {
@@ -25,7 +19,6 @@ public class MessageProto {
                 byte[] commandBytes = command.getBytes(StandardCharsets.UTF_8);
                 byte[] payloadBytes = payload.getBytes(StandardCharsets.UTF_8);
 
-                // Вычисляем общую длину
                 int totalLength = 4 + commandBytes.length + 4 + payloadBytes.length;
 
                 ByteBuffer buffer = ByteBuffer.allocate(totalLength);

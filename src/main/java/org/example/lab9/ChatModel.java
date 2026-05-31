@@ -47,8 +47,7 @@ public class ChatModel {
         if (connected.get()) return;
 
         LevelConfig config = securityLevels.get(levelName);
-        if (config == null) {
-            appendLog("Ошибка: неизвестный уровень защиты\n");
+        if (config == null) {            appendLog("Ошибка: неизвестный уровень защиты\n");
             return;
         }
 
@@ -99,8 +98,7 @@ public class ChatModel {
         });
     }
 
-    public void assignSecretFriends() {
-        if (!connected.get()) return;
+    public void assignSecretFriends() {        if (!connected.get()) return;
         commandExecutor.submit(() -> {
             try {
                 strategy.send(rawOut, "ASSIGN");
@@ -109,7 +107,6 @@ public class ChatModel {
             }
         });
     }
-
     public void getHint() {
         if (!connected.get()) return;
         commandExecutor.submit(() -> {
@@ -149,20 +146,19 @@ public class ChatModel {
         try { if (socket != null) socket.close(); } catch (IOException ignored) {}
     }
 
-    private void startReaderLoop() {
-        try {
-            String line;
-            while (connected.get() && (line = reader.readLine()) != null) {
-                processResponse(line);
-            }
-            if (connected.get()) {
-                appendLog("Сервер закрыл соединение.\n");
-                Platform.runLater(this::disconnect);
-            }
-        } catch (IOException e) {
-            appendLog("Потеряно соединение с сервером.\n");
+    private void startReaderLoop() {        try {
+        String line;
+        while (connected.get() && (line = reader.readLine()) != null) {
+            processResponse(line);
+        }
+        if (connected.get()) {
+            appendLog("Сервер закрыл соединение.\n");
             Platform.runLater(this::disconnect);
         }
+    } catch (IOException e) {
+        appendLog("Потеряно соединение с сервером.\n");
+        Platform.runLater(this::disconnect);
+    }
     }
 
     private void processResponse(String response) {
@@ -170,7 +166,7 @@ public class ChatModel {
             if (response.startsWith("OK|")) {
                 appendLog("✅ " + response.substring(3) + "\n");
             } else if (response.startsWith("ERROR|")) {
-                appendLog(" " + response.substring(6) + "\n");
+                appendLog("❌ " + response.substring(6) + "\n");
             } else if (response.startsWith("MESSAGES|")) {
                 ObservableList<String> currentList = messages.get();
                 currentList.clear();
@@ -183,7 +179,7 @@ public class ChatModel {
                 appendLog("📥 Входящих: " + currentList.size() + "\n");
             } else if (response.startsWith("EMPTY|")) {
                 messages.get().clear();
-                appendLog(" " + response.substring(6) + "\n");
+                appendLog("📭 " + response.substring(6) + "\n");
             } else if (response.startsWith("HINT|")) {
                 appendLog("💡 ПОДСКАЗКА: " + response.substring(5) + "\n");
             } else if (response.startsWith("GUESS_RESULT|")) {
@@ -199,8 +195,7 @@ public class ChatModel {
     }
 
     public static class LevelConfig {
-        public final int port;
-        public final Supplier<SendStrategy> strategySupplier;
+        public final int port;        public final Supplier<SendStrategy> strategySupplier;
         public LevelConfig(int port, Supplier<SendStrategy> strategySupplier) {
             this.port = port;
             this.strategySupplier = strategySupplier;
@@ -211,7 +206,6 @@ public class ChatModel {
         void send(OutputStream out, String cmd) throws Exception;
     }
 
-    // Текстовая стратегия (Уровни 0 и 1)
     public static class TextSendStrategy implements SendStrategy {
         @Override
         public void send(OutputStream out, String cmd) throws IOException {
@@ -221,9 +215,8 @@ public class ChatModel {
         }
     }
 
-    // ProtoBuf стратегия (Уровни 2 и 3)
+
     public static class ProtoSendStrategy implements SendStrategy {
-        // В методе send() класса ProtoSendStrategy:
         @Override
         public void send(OutputStream out, String cmd) throws IOException {
             String[] parts = cmd.split("\\|", 3);
@@ -244,7 +237,6 @@ public class ChatModel {
             MessageProto.SecureMessage message = builder.build();
             byte[] data = message.toByteArray();
 
-            // Отправляем: [общая длина 4 байта][ProtoBuf данные]
             byte[] lengthPrefix = ByteBuffer.allocate(4).putInt(data.length).array();
             out.write(lengthPrefix);
             out.write(data);

@@ -5,32 +5,15 @@ import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
 
-@FunctionalInterface
-interface Command {
-    void execute(String[] parts, PrintWriter out, SessionContext context);
-}
-
-class SessionContext {
-    private String username;
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-}
-
 public class Server {
     private static final int PORT = 5555;
 
     private static final ConcurrentHashMap<String, ConcurrentLinkedQueue<String>> mailboxes = new ConcurrentHashMap<>();
-
     private static final List<String> gameParticipants = new CopyOnWriteArrayList<>();
     private static final ConcurrentHashMap<String, String> secretFriends = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<String, Set<String>> hints = new ConcurrentHashMap<>();
     private static boolean gameStarted = false;
+
     private static final Map<String, Command> commandRegistry = new HashMap<>();
 
     static {
@@ -46,7 +29,9 @@ public class Server {
             String username = parts[1];
             ctx.setUsername(username);
             mailboxes.putIfAbsent(username, new ConcurrentLinkedQueue<>());
-            gameParticipants.add(username);
+            if (!gameParticipants.contains(username)) {
+                gameParticipants.add(username);
+            }
             hints.putIfAbsent(username, ConcurrentHashMap.newKeySet());
             out.println("OK|" + username + " зарегистрирован");
             System.out.println("Зарегистрирован: " + username);
@@ -62,12 +47,11 @@ public class Server {
                 List<String> shuffled = new ArrayList<>(gameParticipants);
                 Collections.shuffle(shuffled);
 
-                for (int i = 0; i < shuffled.size(); i++) {
-                    String giver = shuffled.get(i);
+                for (int i = 0; i < shuffled.size(); i++) {                    String giver = shuffled.get(i);
                     String receiver = shuffled.get((i + 1) % shuffled.size());
                     secretFriends.put(receiver, giver);
 
-                    mailboxes.get(receiver).add("Тайный друг назначен!");
+                    mailboxes.get(receiver).add("🎁 ВАШ ТАЙНЫЙ ДРУГ НАЗНАЧЕН! Начинайте делать приятности!");
                     System.out.println(giver + " -> тайный друг для -> " + receiver);
                 }
 
@@ -89,7 +73,7 @@ public class Server {
             if (!mailboxes.containsKey(recipient)) {
                 out.println("ERROR|Пользователь " + recipient + " не найден");
             } else {
-                mailboxes.get(recipient).add(message);
+                mailboxes.get(recipient).add("🎄 " + message);
                 out.println("OK|Сообщение отправлено");
             }
         });
@@ -110,10 +94,8 @@ public class Server {
             String hint = generateHint(mySecretFriend);
             out.println("HINT|" + hint);
         });
-
         commandRegistry.put("ADD_HINT", (parts, out, ctx) -> {
-            if (parts.length < 2) {
-                out.println("ERROR|Формат: ADD_HINT|Текст подсказки");
+            if (parts.length < 2) {                out.println("ERROR|Формат: ADD_HINT|Текст подсказки");
                 return;
             }
             String username = ctx.getUsername();
@@ -162,8 +144,7 @@ public class Server {
             if (messages == null || messages.isEmpty()) {
                 out.println("EMPTY|Нет новых сообщений");
             } else {
-                StringBuilder sb = new StringBuilder("MESSAGES|");
-                while (!messages.isEmpty()) {
+                StringBuilder sb = new StringBuilder("MESSAGES|");                while (!messages.isEmpty()) {
                     sb.append(messages.poll()).append("\n");
                 }
                 if (sb.length() > 9) sb.setLength(sb.length() - 1);
@@ -212,10 +193,8 @@ public class Server {
         private Socket socket;
         private SessionContext context = new SessionContext();
 
-        public ClientHandler(Socket socket) {
-            this.socket = socket;
+        public ClientHandler(Socket socket) {            this.socket = socket;
         }
-
         @Override
         public void run() {
             try (
